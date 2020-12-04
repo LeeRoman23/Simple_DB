@@ -16,17 +16,6 @@ public class User {
     Scanner in = new Scanner(System.in);
 
     public User() {
-        System.out.print("Enter your new login: ");
-        this.login = in.next();
-        this.password = PasswordBuilder.createPassword();
-        System.out.println("Your new password is: " + password);
-        System.out.print("Do you want to change password? y/n  ");
-        if (in.next().equalsIgnoreCase("y")) {
-            changePassword();
-        }
-        System.out.print("How much money to you want to put: ");
-        this.money = in.nextInt();
-        System.out.println("=======================================");
         try {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
         } catch (SQLException e) {
@@ -34,9 +23,32 @@ public class User {
         }
     }
 
-    public void changePassword() {
+    public void signUp() {
+        User user = new User();
+        System.out.print("Enter your new login: ");
+        user.setLogin(in.next());
+        user.setPassword(PasswordBuilder.createPassword());
+        System.out.println("Your new password is: " + user.getPassword());
+        System.out.print("Do you want to change password? y/n  ");
+        if (in.next().equalsIgnoreCase("y")) {
+            user.setPassword(changePassword());
+        }
+        System.out.print("How much money to you want to put: ");
+        user.setMoney(in.nextInt());
+        System.out.println("=======================================");
+        String sql = ("INSERT INTO users (login, password, money) VALUES (" +
+                "'" + user.getLogin() + "'," + "'" + user.getPassword() + "'," + user.getMoney() + ");");
+        try {
+            Statement statement = user.getConnection().createStatement();
+            boolean resultSet = statement.execute(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String changePassword() {
         System.out.print("Enter your new password: ");
-        this.password = in.next();
+        return in.next();
     }
 
     public Connection getConnection() {
@@ -51,7 +63,7 @@ public class User {
         this.login = login;
     }
 
-    public String getPassword() {
+    private String getPassword() {
         return password;
     }
 
@@ -71,12 +83,13 @@ public class User {
             System.out.print("Enter your password: ");
             String password = in.next();
             statement = getConnection().createStatement();
-            String query = "SELECT money FROM users WHERE login='" + username + "' AND password='" + password +"';";
+            String query = "SELECT money FROM users WHERE login='" + username + "' AND password='" + password + "';";
             ResultSet resultSet = statement.executeQuery(query);
             resultSet.next();
             return resultSet.getInt(1);
         } catch (SQLException e) {
-            System.out.println("We can't find user with such credentials.");;
+            System.out.println("We can't find user with such credentials.");
+            ;
             return 0;
         }
     }
@@ -97,7 +110,8 @@ public class User {
                     return true;
                 }
             } catch (SQLException e) {
-                System.out.println("Incorrect data...");;
+                System.out.println("Incorrect data...");
+                ;
             }
         }
         return false;
